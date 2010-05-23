@@ -16,6 +16,8 @@ symbol = oneOf "!$%&|*+-/:<=?>@^_~#"
 spaces :: Parser()
 spaces = skipMany1 space
 
+-- Parsers ---------------------------------------
+
 parseString :: Parser LispVal
 parseString = do
   char '"'
@@ -61,10 +63,29 @@ parseExpr = parseAtom
                    char ')'
                    return x
 
+-- Shows -----------------------------------------
+
+showVal :: LispVal -> String
+showVal (Atom str) = "atom " ++ str
+
+showVal (List xs) = "( " ++ (showListVal xs) ++ " )"
+showVal (DottedList ls vl) = showListVal ls ++ " . " ++ (showVal vl)
+
+showVal (Number int) = show int
+showVal (String s) = "string " ++ s
+showVal (Bool b) = show b
+
+showListVal :: [LispVal] -> String
+showListVal [] = ""
+showListVal [x] = showVal x
+showListVal (x:xs) = (showVal x) ++ ',' : ' ' : (showListVal xs)
+
+-- Main ------------------------------------------
+
 readExpr :: String -> String
 readExpr input = case parse parseExpr "lisp" input of
                    Left err -> "No match: " ++ show err
-                   Right val -> "Found value"
+                   Right val -> "Found value: " ++ showVal val
 
 main :: IO()
 main = do
